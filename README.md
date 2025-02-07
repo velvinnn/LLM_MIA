@@ -1,4 +1,4 @@
-# Data-Contamination
+# Membership Inference Attacks (MIA) in language models.
 The code for case study in the manuscript, 'Does Data Contamination Detection Work (Well) for LLMs? A Survey and Evaluation on Detection Assumptions'
 
 ## Data download
