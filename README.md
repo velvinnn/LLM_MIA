@@ -1,4 +1,4 @@
-# Membership Inference Attacks (MIA) in language models.
+# Data-Contamination
 The code for case study in the manuscript, 'Does Data Contamination Detection Work (Well) for LLMs? A Survey and Evaluation on Detection Assumptions'
 
 ## Data download
@@ -20,3 +20,5 @@ The code for case study in the manuscript, 'Does Data Contamination Detection Wo
 
 ## Validating assumptions
 see the jupyter notebook data_contamination.ipynb
+
+# Citation

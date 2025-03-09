@@ -1,11 +1,11 @@
 # model_path
-BioMistral='BioMistral'
+BioMistral=''
 
 
 # the base directories for all files
 base_path=''
 base_path2=''
-output_path=''
+output_path='data'
 
 # domain = [seen_file,unseen_file]
 AS_tex=[f'{base_path}/algebraic-stack/tex_train.jsonl',f'{base_path}/algebraic-stack/tex_test.jsonl']
@@ -23,12 +23,12 @@ AS_lean=[f'{base_path}/algebraic-stack/lean_proofsteps_train.jsonl',f'{base_path
 AS_maple=[f'{base_path}/algebraic-stack/maple_train.jsonl',f'{base_path}/algebraic-stack/maple_test.jsonl']
 AS_r=[f'{base_path}/algebraic-stack/r_train.jsonl',f'{base_path}/algebraic-stack/r_test.jsonl']
 AS_github_coq=[f'{base_path}/algebraic-stack/Github-Coq_train.jsonl',f'{base_path}/algebraic-stack/Github-Coq_test.jsonl']
-AS_github_isabelle=[f'{base_path}/algebraic-stack/Github-Isabelle_train.jsonl',f'{base_path}/algebraic-stack/github-Isabelle_test.jsonl']
+AS_github_isabelle=[f'{base_path}/algebraic-stack/Github-Isabelle_train.jsonl',f'{base_path}/algebraic-stack/Github-Isabelle_test.jsonl']
 AS_github_lean=[f'{base_path}/algebraic-stack/Github-Lean_train.jsonl',f'{base_path}/algebraic-stack/Github-Lean_test.jsonl']
 AS_github_MATLAB=[f'{base_path}/algebraic-stack/Github-MATLAB_train.jsonl',f'{base_path}/algebraic-stack/github-MATLAB_test.jsonl']
 semantic_scholar=[f'{base_path}/peS2o/train.jsonl',f'{base_path}/peS2o/validation.jsonl']
-UltraChat=[f'{base_path}/UltraChat/train.json',f'{base_path}/UltraChat/test.json']
-RLVR_GSM=[f'{base_path}/UltraChat/train.json',f'{base_path}/UltraChat/test.json']
+UltraChat=[f'{base_path}/UltraChat/train.jsonl',f'{base_path}/UltraChat/test.jsonl']
+RLVR_GSM=[f'{base_path}/UltraChat/train.jsonl',f'{base_path}/UltraChat/test.jsonl']
 
 DC_2006smoker=[f'{base_path2}/DC/2006smoker/train.json',f'{base_path2}/DC/2006smoker/evaluation.json']
 DC_2008obesity=[f'{base_path2}/DC/2008obesity/train.json',f'{base_path2}/DC/2008obesity/evaluation.json']
@@ -74,13 +74,13 @@ chat_wiki_medical_terms=[f'{base_path2}/chat/wiki_medical_terms/train.json',f'{b
 chat_medical_chat=[f'{base_path2}/chat/medical_chat/train.json',f'{base_path2}/chat/medical_chat/evaluation.json']
 chat_MedDialog=[f'{base_path2}/chat/MedDialog/train.json',f'{base_path2}/chat/MedDialog/evaluation.json']
 
-Github=["Github","Github"]
-FreeLaw=["FreeLaw","FreeLaw"]
-Enron_Emails=["Enron Emails","Enron Emails"]
-ArXiv=["ArXiv","ArXiv"]
-OpenWeb_Text2=["OpenWebText2","OpenWebText2"]
-Open_Subtitles=["OpenSubtitles","OpenSubtitles"]
-Hacker_News=["HackerNews","HackerNews"]
-YoutubeSubtitles=["YoutubeSubtitles","YoutubeSubtitles"]
-Pile_CC=["Pile-CC","Pile-CC"]
+Github=[f"{base_path}/pile/Github_train.jsonl",f"{base_path}/pile/Github_test.jsonl"]
+FreeLaw=[f"{base_path}/pile/FreeLaw_train.jsonl",f"{base_path}/pile/FreeLaw_test.jsonl"]
+Enron_Emails=[f"{base_path}/pile/Enron Emails_train.jsonl",f"{base_path}/pile/Enron Emails_test**.jsonl"]
+ArXiv=[f"{base_path}/pile/ArXiv_train.jsonl",f"{base_path}/pile/ArXiv_test**.jsonl"]
+OpenWeb_Text2=[f"{base_path}/pile/OpenWebText2_train.jsonl",f"{base_path}/pile/OpenWebText2_test.jsonl"]
+Open_Subtitles=[f"{base_path}/pile/OpenSubtitles_train.jsonl",f"{base_path}/pile/OpenSubtitles_test.jsonl"]
+Hacker_News=[f"{base_path}/pile/HackerNews_train.jsonl",f"{base_path}/pile/HackerNews_test**.jsonl"]
+YoutubeSubtitles=[f"{base_path}/pile/YoutubeSubtitles_train.jsonl",f"{base_path}/pile/YoutubeSubtitles_test**.jsonl"]
+Pile_CC=[f"{base_path}/pile/Pile-CC_train.jsonl",f"{base_path}/pile/Pile-CC_test.jsonl"]
 

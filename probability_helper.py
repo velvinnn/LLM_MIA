@@ -44,6 +44,11 @@ ACCURACY='accuracy'
 AUC='AUC'
 PAIRS='pairs'
 token_overhead=0.000001
+ppl_keys=[f'ppl_{i}' for i in [50,100,200]]+['perplexity'] # 
+entropy_ps=[5, 10, 15, 20, 25]
+rank_thresholds=[1,3,5,10,15,20,25] 
+token_thresholds=[5,15,25]
+rows=ppl_keys  +  [f'Min {k}% token' for k in token_thresholds] + [f'Mem {k}' for k in rank_thresholds] + [f'Entropy {k}' for k in entropy_ps] + ['PPL_seen','PPL_unseen']
 
 def load_model(base_model_id,device):
     if 't5' in base_model_id:
@@ -102,9 +107,19 @@ def find_ranks(sentence,base_model_id,model,tokenizer,device,start_token=1):
         rank= torch.sum(log_probs[0,i,:]>log_probs[0,i,tokens['input_ids'][0,i]]).item()
         ranks.append(rank)
           # Get the probability of the actual token
+
+    for k in entropy_ps:
+        perplexity[f'Entropy {k}']=[]
+    for i in range(log_probs.shape[1]):
+        topk=torch.topk(log_probs[0,i,:], entropy_ps[-1]).values#.tensor()
+        for k in entropy_ps[::-1]:
+            topk= torch.topk(topk, k).values
+            perplexity[f'Entropy {k}'].append(-torch.sum(topk * torch.exp(topk)).item())
+    for k in entropy_ps:
+        perplexity[f'Entropy {k}']=np.average(perplexity[f'Entropy {k}'])     
     return offset_mapping,all_tokens,ranks,token_probs,perplexity
 
-def calc_entropy(probs,p):
+def calc_entropy(probs,p,normalized=True):
     # entropy across all text
     # pk = np.array(ls)  # fair coin
     # H = entropy(pk)
@@ -123,13 +138,16 @@ def calc_entropy(probs,p):
     else: # top k sampling
         top_probs = sorted_probs[:int(p)]
 
-    # Normalize the top_probs so they sum to p
-    normalized_probs = top_probs / np.sum(top_probs)
-    
-    # Calculate the entropy
-    entropy = -np.sum(normalized_probs * np.log(normalized_probs))
-    
-    return entropy
+    if normalized:
+        # Normalize the top_probs so they sum to p
+        normalized_probs = top_probs / np.sum(top_probs)
+        
+        # Calculate the entropy
+        entropy = -np.sum(normalized_probs * np.log(normalized_probs))
+        
+        return entropy
+    else:
+        return -np.sum(top_probs * np.log(top_probs))
 
 def plot_density(data,xlabel,outname,lower_bound=None,upper_bound=None,description=''):
     f = plt.figure(figsize=(4, 2), dpi=200)
@@ -137,8 +155,8 @@ def plot_density(data,xlabel,outname,lower_bound=None,upper_bound=None,descripti
     for key, ls in data.items():
         temp+=ls
     lower_bound=np.percentile(temp,10)
-    if 'Entropy' in outname:
-        lower_bound=np.percentile(temp,30)
+    # if 'Entropy' in outname:
+    #     lower_bound=np.percentile(temp,40)
     upper_bound=np.percentile(temp,90)
     for key, ls in data.items():
         key='seen' if 'train' in key.lower() else 'unseen'
@@ -177,16 +195,29 @@ def compare_distribution(list1,list2,side='less'):
         return round(p_value,3)
     else:
         return round(p_value,3)
+
+# def calculate_accuracy(l1,l2,direction='smaller'):
+#     l1=[v for v in l1 if not np.isnan(v) and v!=float("inf") and v!=float("-inf")]
+#     l2=[v for v in l2 if not np.isnan(v) and v!=float("inf") and v!=float("-inf")]
+#     if len(l1)==0 or len(l2)==0:
+#         return -1,'NA'
+#     if direction=='smaller':
+#         y=np.array([1]*len(l1)+[2]*len(l2))
+#     else:
+#         y=np.array([2]*len(l1)+[1]*len(l2))
+#     pred = np.array(l1+l2)
+#     fpr, tpr, thresholds = metrics.roc_curve(y, pred, pos_label=2)
     
+#     return round(metrics.auc(fpr, tpr)*100,1),'NA'
 def calculate_accuracy(l1,l2,direction='smaller'):
     l1=[v for v in l1 if not np.isnan(v) and v!=float("inf") and v!=float("-inf")]
     l2=[v for v in l2 if not np.isnan(v) and v!=float("inf") and v!=float("-inf")]
     if len(l1)==0 or len(l2)==0:
         return -1,'NA'
-    if direction=='smaller':
-        y=np.array([1]*len(l1)+[2]*len(l2))
-    else:
-        y=np.array([2]*len(l1)+[1]*len(l2))
+    y=np.array([1]*len(l1)+[2]*len(l2))
+    if direction!='smaller':
+        l1=[-v for v in l1]
+        l2=[-v for v in l2]
     pred = np.array(l1+l2)
     fpr, tpr, thresholds = metrics.roc_curve(y, pred, pos_label=2)
     
@@ -235,7 +266,7 @@ def plot_and_calculate(train,test,train_domain,test_domain,model_tag,plot_figure
             ls=[[],[]]
             for idx,source in enumerate([train,test]):
                 for dic in source:
-                    ls[idx].append(sum([v for v in dic['ranks'] if v<=rank_threshold])/len(dic['ranks'])) 
+                    ls[idx].append(len([v for v in dic['ranks'] if v<=rank_threshold])/len(dic['ranks'])) 
             accuracy, p_value=calculate_accuracy(ls[0], ls[1],  direction='larger')
             scores[f'Mem {rank_threshold}']=accuracy
             if plot_figure:
@@ -243,20 +274,15 @@ def plot_and_calculate(train,test,train_domain,test_domain,model_tag,plot_figure
                                  f'data/analysis/plots/density/{train_domain}_{test_domain}_Mem_{k}_{model_tag}')
 
         
-        # entropy
         direction='smaller'
         for p in entropy_ps:
-            ls=[[],[]]
-            for idx,source in enumerate([train,test]):
-                for dic in source:
-                    ls[idx].append(calc_entropy([v+token_overhead for v in dic['token_probs']],p))    
-            accuracy, p_value=calculate_accuracy(ls[0], ls[1], direction=direction)
+            e_train=[dic['perplexity'][f'Entropy {p}'] for dic in train if ppl_key in dic['perplexity']]
+            e_test=[dic['perplexity'][f'Entropy {p}'] for dic in test if ppl_key in dic['perplexity']]
+            accuracy, p_value=calculate_accuracy(e_train, e_test, direction=direction)
             if plot_figure:
-                plot_density({'train':ls[0],'test':ls[1]},f'Entropy {p}',
+                plot_density({'train':e_train,'test':e_test},f'Entropy {p}',
                                  f'data/analysis/plots/density/{train_domain}_{test_domain}_Entropy_{p}_{model_tag}')
-            scores[f'Entropy {p}']=accuracy   
-        
-       
+            scores[f'Entropy {p}']=accuracy        
     return scores
 
 text_before="""
@@ -274,8 +300,8 @@ def get_text_after(model_tag,dataset):
 \hline
 \end{tabular}
 }
-\caption{Average contamination detection AUC for the {model_tag} model,  under different domains within
-the {dataset} dataset. `PPL\_200' represents the average perplexity $\pm$ STD, from the first 200 tokens within every instance.
+\caption{Average contamination detection AUC for the \\textbf{{model_tag}} model,  under different domains within
+the {dataset} dataset. `PPL\_200' represents the average perplexity $\pm$ STD, from the first 200 tokens within every instance.  The color {\color[HTML]{38761D} green} represents AUCs higher than 60.
 }
 \label{tab:results_{model_tag}}
 \end{table*}
@@ -290,11 +316,11 @@ latex_lines={
     ' & Min 5\% token':'Min 5% token',
     ' & Min 15\% token':'Min 15% token',
     ' & Min 25\% token':'Min 25% token',
-    ' \cline{1-2}\multirow{3}{*}{A\\ref{as:exact_memorization}} & Mem 1':'Mem 1',
-    ' & Mem 3':'Mem 3',
-    ' & Mem 5':'Mem 5',
+    ' \cline{1-2}\multirow{3}{*}{A\\ref{as:exact_memorization}} & Mem 5':'Mem 5',
+    ' & Mem 15':'Mem 15',
+    ' & Mem 25':'Mem 25',
     '\cline{1-2} \multirow{3}{*}{A\\ref{as:Generation_Variation}} & Entropy 5':'Entropy 5',
-    ' & Entropy 10':'Entropy 10',
+    ' & Entropy 15':'Entropy 15',
     ' & Entropy 25':'Entropy 25',
     '\hline\multirow{2}{*}{PPL_200} & Seen':'PPL_seen',
     ' & Unseen':'PPL_unseen'
@@ -315,3 +341,5 @@ def plot_heat_map(data,xs,ys,outname):
     fig.tight_layout()
     plt.savefig(outname)
     return
+
+#
