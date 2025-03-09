@@ -1,5 +1,5 @@
 # Data-Contamination
-The papers and code for the case study in the manuscript, 'Does Data Contamination Detection Work (Well) for LLMs? A Survey and Evaluation on Detection Assumptions'
+The papers and code for the case study in the manuscript, ['Does Data Contamination Detection Work (Well) for LLMs? A Survey and Evaluation on Detection Assumptions'](https://arxiv.org/abs/2410.18966)
 
 # Prior Papers Reviewed in Our Survey
 ## Instance Similarity
