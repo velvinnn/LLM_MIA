@@ -1,6 +1,7 @@
 # Data-Contamination Detection / Membership Inference Attack (MIA) for Large Language Models (LLMs)
 The papers and code for the case study in the NAACL 2025 paper, ['Does Data Contamination Detection Work (Well) for LLMs? A Survey and Evaluation on Detection Assumptions'](https://arxiv.org/abs/2410.18966)
 
+You can also find the presentation here: https://youtu.be/IhaxwbZOcaU
 # Prior Papers Reviewed in Our Survey
 ## Instance Similarity
 1. Jesse Dodge, Maarten Sap, Ana Marasovic, William Agnew, Gabriel Ilharco, Dirk Groeneveld, Margaret Mitchell, and Matt Gardner. 2021. [Documenting large webtext corpora: A case study on the colossal clean crawled corpus.](https://aclanthology.org/2021.emnlp-main.98.pdf) In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pages 1286–1305.
